@@ -39,6 +39,7 @@ describe('Form', () => {
         pattern: /^$/,
         message: (
           <span>
+            {/* eslint-disable-next-line react/jsx-curly-brace-presence */}
             Account does not exist,{' '}
             <a rel="noopener noreferrer" href="https://www.alipay.com/" target="_blank">
               Forgot account?
@@ -81,7 +82,7 @@ describe('Form', () => {
 
     myForm.setFields({
       account: {
-        errors: [<div>Error 1</div>, <div>Error 2</div>],
+        errors: [<div key="error-1">Error 1</div>, <div key="error-2">Error 2</div>],
       },
     });
 

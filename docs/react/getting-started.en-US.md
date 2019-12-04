@@ -139,7 +139,7 @@ import Button from 'antd/es/button';
 import 'antd/es/button/style'; // or antd/es/button/style/css for css format file
 ```
 
-> Note: antd support ES6 tree shaking, so `import { Button } from 'antd';` will drop the js code you don't use too.
+> Note: antd supports ES6 tree shaking, so `import { Button } from 'antd';` will drop the js code you don't use too.
 
 We strongly recommend using [babel-plugin-import](https://github.com/ant-design/babel-plugin-import), which can convert the following code to the 'antd/es/xxx' way:
 
@@ -150,6 +150,20 @@ import { Button } from 'antd';
 And this plugin can load styles too. Read [usage](https://github.com/ant-design/babel-plugin-import#usage) for more details.
 
 > FYI, babel-plugin-import's `style` option will importing some global reset styles, don't use it if you don't need those styles. You can import styles manually via `import 'antd/dist/antd.css'` and override the global reset styles.
+
+## Replace momentjs to Day.js
+
+You can use [antd-dayjs-webpack-plugin](https://github.com/ant-design/antd-dayjs-webpack-plugin) plugin to replace momentjs to Day.js to reduce bundle size dramatically. You need to update your webpack config file like this:
+
+```js
+// webpack-config.js
+import AntdDayjsWebpackPlugin from 'antd-dayjs-webpack-plugin';
+
+module.exports = {
+  // ...
+  plugins: [new AntdDayjsWebpackPlugin()],
+};
+```
 
 ## Customization
 

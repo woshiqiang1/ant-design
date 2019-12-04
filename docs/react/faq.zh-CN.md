@@ -13,7 +13,7 @@ title: FAQ
 
 ### 当我点击 `Select Dropdown DatePicker TimePicker Popover Popconfirm` 内的另一个 popup 组件时它会消失，如何解决？
 
-该问题在 `3.11.0` 后已经解决。如果你仍在使用旧版本，你可以通过 `<Select getPopupContainer={trigger => trigger.parentNode}>` 来在 Popover 中渲染组件，或者使用其他的 getXxxxContainer 参数。
+该问题在 `3.11.0` 后已经解决。如果你仍在使用旧版本，你可以通过 `<Select getPopupContainer={trigger => trigger.parentNode}>` 来在 Popover 中渲染组件，或者使用其他的 `getXxxxContainer` 参数。
 
 https://ant.design/components/select/#Select-props
 
@@ -21,9 +21,7 @@ https://ant.design/components/select/#Select-props
 
 ### `Select Dropdown DatePicker TimePicker Popover Popconfirm` 会跟随滚动条上下移动？
 
-使用 `<Select getPopupContainer={trigger => trigger.parentNode}>` 来将组件渲染到滚动区域内，或者使用其他的 getXxxxContainer 参数。
-
-https://ant.design/components/select/#Select-props
+使用 `<Select getPopupContainer={trigger => trigger.parentNode}>`（[API 文档](https://ant.design/components/select-cn/#Select-props)）来将组件渲染到滚动区域内，或者使用其他的 `getXxxxContainer` 参数。如果需要全局解决这个问题，可以使用 `<ConfigProvider getPopupContainer={trigger => trigger.parentNode}>`（[API 文档](https://ant.design/components/config-provider-cn/#API)）
 
 相关 issue：[#3487](https://github.com/ant-design/ant-design/issues/3487) [#3438](https://github.com/ant-design/ant-design/issues/3438)
 
@@ -57,6 +55,10 @@ import { Menu, Breadcrumb, Icon } from 'antd';
 ### 如何配置 webpack 以优化 momentjs 的打包大小？
 
 参考：https://github.com/jmblog/how-to-optimize-momentjs-with-webpack 。
+
+### 如何使用 Day.js 替换 momentjs 来减小打包大小？
+
+我们提供了 `antd-dayjs-webpack-plugin` 插件，无需对现有代码做任何修改直接替换成 `Day.js`。请参考 [antd-dayjs-webpack-plugin](https://github.com/ant-design/antd-dayjs-webpack-plugin)。
 
 ### 当我动态改变 `defaultValue` 的时候它并没有生效。
 
@@ -102,7 +104,7 @@ import { Menu, Breadcrumb, Icon } from 'antd';
 
 ### 我的组件默认语言是英文的？如何切回中文的。
 
-请尝试使用 [LocaleProvider](https://ant.design/components/locale-provider-cn/) 组件来包裹你的应用。
+请尝试使用 [ConfigProvider](/components/config-provider/#components-config-provider-demo-locale) 组件来包裹你的应用。
 
 如果日期组件的国际化仍未生效，请配置 `moment.locale('zh-cn')` 并**检查你本地的 `moment` 版本和 `antd` 依赖的 `moment` 版本是否一致**。
 

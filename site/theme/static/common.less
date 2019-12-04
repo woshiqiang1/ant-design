@@ -3,8 +3,11 @@ body {
   height: 100%;
 }
 
-body {
+html {
   overflow-x: hidden;
+}
+
+body {
   color: @site-text-color;
   font-size: 14px;
   font-family: @font-family;
@@ -100,13 +103,21 @@ a {
 }
 
 // reset menu text color
-.menu-site .ant-menu-item > a {
-  color: @site-text-color;
-}
+.menu-site {
+  .ant-menu-item > a {
+    color: @site-text-color;
+  }
 
-.menu-site .ant-menu-item-selected > a,
-.menu-site .ant-menu-item > a:hover {
-  color: @primary-color;
+  .ant-menu-item-selected > a,
+  .ant-menu-item > a:hover {
+    color: @primary-color;
+  }
+
+  .menu-antd-components-count {
+    margin-left: 0.5em;
+    color: @disabled-color;
+    font-size: 12px;
+  }
 }
 
 #react-content {

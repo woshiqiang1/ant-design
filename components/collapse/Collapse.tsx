@@ -9,8 +9,8 @@ import animation from '../_util/openAnimation';
 export type ExpandIconPosition = 'left' | 'right';
 
 export interface CollapseProps {
-  activeKey?: Array<string> | string;
-  defaultActiveKey?: Array<string>;
+  activeKey?: Array<string | number> | string | number;
+  defaultActiveKey?: Array<string | number> | string | number;
   /** 手风琴效果 */
   accordion?: boolean;
   destroyInactivePanel?: boolean;
@@ -45,14 +45,15 @@ export default class Collapse extends React.Component<CollapseProps, any> {
 
   renderExpandIcon = (panelProps: PanelProps = {}, prefixCls: string) => {
     const { expandIcon } = this.props;
-    const icon = expandIcon ? (
+    const icon = (expandIcon ? (
       expandIcon(panelProps)
     ) : (
       <Icon type="right" rotate={panelProps.isActive ? 90 : undefined} />
-    );
+    )) as React.ReactNode;
+
     return React.isValidElement(icon)
       ? React.cloneElement(icon as any, {
-          className: `${prefixCls}-arrow`,
+          className: classNames(icon.props.className, `${prefixCls}-arrow`),
         })
       : icon;
   };
