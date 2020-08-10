@@ -23,7 +23,7 @@
     line-height: @badge-height;
     white-space: nowrap;
     text-align: center;
-    background: @highlight-color;
+    background: @badge-count-background;
     border-radius: @badge-height / 2;
     box-shadow: 0 0 0 1px @shadow-color-inverse;
     a,
@@ -159,7 +159,7 @@
     display: inline-block;
     height: @badge-height;
     transition: all 0.3s @ease-in-out;
-    > p {
+    > p.@{number-prefix-cls}-only-unit {
       height: @badge-height;
       margin: 0;
     }
@@ -189,3 +189,6 @@
     opacity: 0;
   }
 }
+
+@import './ribbon';
+@import './rtl';
