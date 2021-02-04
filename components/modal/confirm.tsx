@@ -14,26 +14,21 @@ function getRootPrefixCls() {
   return defaultRootPrefixCls;
 }
 
+type ConfigUpdate = ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps);
+
 export type ModalFunc = (
   props: ModalFuncProps,
 ) => {
   destroy: () => void;
-  update: (newConfig: ModalFuncProps) => void;
+  update: (configUpdate: ConfigUpdate) => void;
 };
 
-export interface ModalStaticFunctions {
-  info: ModalFunc;
-  success: ModalFunc;
-  error: ModalFunc;
-  warn: ModalFunc;
-  warning: ModalFunc;
-  confirm: ModalFunc;
-}
+export type ModalStaticFunctions = Record<NonNullable<ModalFuncProps['type']>, ModalFunc>;
 
 export default function confirm(config: ModalFuncProps) {
   const div = document.createElement('div');
   document.body.appendChild(div);
-  // eslint-disable-next-line no-use-before-define
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   let currentConfig = { ...config, close, visible: true } as any;
 
   function destroy(...args: any[]) {
@@ -47,7 +42,7 @@ export default function confirm(config: ModalFuncProps) {
     }
     for (let i = 0; i < destroyFns.length; i++) {
       const fn = destroyFns[i];
-      // eslint-disable-next-line no-use-before-define
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       if (fn === close) {
         destroyFns.splice(i, 1);
         break;
@@ -58,6 +53,7 @@ export default function confirm(config: ModalFuncProps) {
   function render({ okText, cancelText, prefixCls, ...props }: any) {
     /**
      * https://github.com/ant-design/ant-design/issues/23623
+     *
      * Sync render blocks React event. Let's make this async.
      */
     setTimeout(() => {
@@ -79,16 +75,25 @@ export default function confirm(config: ModalFuncProps) {
     currentConfig = {
       ...currentConfig,
       visible: false,
-      afterClose: destroy.bind(this, ...args),
+      afterClose: () => {
+        if (typeof config.afterClose === 'function') {
+          config.afterClose();
+        }
+        destroy.apply(this, args);
+      },
     };
     render(currentConfig);
   }
 
-  function update(newConfig: ModalFuncProps) {
-    currentConfig = {
-      ...currentConfig,
-      ...newConfig,
-    };
+  function update(configUpdate: ConfigUpdate) {
+    if (typeof configUpdate === 'function') {
+      currentConfig = configUpdate(currentConfig);
+    } else {
+      currentConfig = {
+        ...currentConfig,
+        ...configUpdate,
+      };
+    }
     render(currentConfig);
   }
 
@@ -104,46 +109,46 @@ export default function confirm(config: ModalFuncProps) {
 
 export function withWarn(props: ModalFuncProps): ModalFuncProps {
   return {
-    type: 'warning',
     icon: <ExclamationCircleOutlined />,
     okCancel: false,
     ...props,
+    type: 'warning',
   };
 }
 
 export function withInfo(props: ModalFuncProps): ModalFuncProps {
   return {
-    type: 'info',
     icon: <InfoCircleOutlined />,
     okCancel: false,
     ...props,
+    type: 'info',
   };
 }
 
 export function withSuccess(props: ModalFuncProps): ModalFuncProps {
   return {
-    type: 'success',
     icon: <CheckCircleOutlined />,
     okCancel: false,
     ...props,
+    type: 'success',
   };
 }
 
 export function withError(props: ModalFuncProps): ModalFuncProps {
   return {
-    type: 'error',
     icon: <CloseCircleOutlined />,
     okCancel: false,
     ...props,
+    type: 'error',
   };
 }
 
 export function withConfirm(props: ModalFuncProps): ModalFuncProps {
   return {
-    type: 'confirm',
     icon: <ExclamationCircleOutlined />,
     okCancel: true,
     ...props,
+    type: 'confirm',
   };
 }
 

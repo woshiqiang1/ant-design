@@ -8,10 +8,17 @@ import Checkbox from '../../../checkbox';
 import Radio from '../../../radio';
 import Dropdown from '../../../dropdown';
 import Empty from '../../../empty';
-import { ColumnType, ColumnFilterItem, Key, TableLocale, GetPopupContainer } from '../../interface';
+import {
+  ColumnType,
+  ColumnFilterItem,
+  Key,
+  TableLocale,
+  GetPopupContainer,
+  FilterConfirmProps,
+} from '../../interface';
 import FilterDropdownMenuWrapper from './FilterWrapper';
 import { FilterState } from '.';
-import useSyncState from '../useSyncState';
+import useSyncState from '../../../_util/hooks/useSyncState';
 import { ConfigContext } from '../../../config-provider/context';
 
 const { SubMenu, Item: MenuItem } = Menu;
@@ -34,21 +41,22 @@ function renderFilterItems({
   locale: TableLocale;
 }) {
   if (filters.length === 0) {
-    // wrapped with <></> to avoid react warning
+    // wrapped with <div /> to avoid react warning
     // https://github.com/ant-design/ant-design/issues/25979
     return (
-      <>
+      <div
+        style={{
+          margin: '16px 0',
+        }}
+      >
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={locale.filterEmptyText}
-          style={{
-            margin: '16px 0',
-          }}
           imageStyle={{
             height: 24,
           }}
         />
-      </>
+      </div>
     );
   }
   return filters.map((filter, index) => {
@@ -150,16 +158,15 @@ function FilterDropdown<RecordType>(props: FilterDropdownProps<RecordType>) {
   const onMenuClick = () => {
     window.clearTimeout(openRef.current);
   };
-  React.useEffect(() => {
-    return () => {
+  React.useEffect(
+    () => () => {
       window.clearTimeout(openRef.current);
-    };
-  }, []);
+    },
+    [],
+  );
 
   // ======================= Submit ========================
   const internalTriggerFilter = (keys: Key[] | undefined | null) => {
-    triggerVisible(false);
-
     const mergedKeys = keys && keys.length ? keys : null;
     if (mergedKeys === null && (!filterState || !filterState.filteredKeys)) {
       return null;
@@ -177,12 +184,19 @@ function FilterDropdown<RecordType>(props: FilterDropdownProps<RecordType>) {
   };
 
   const onConfirm = () => {
+    triggerVisible(false);
     internalTriggerFilter(getFilteredKeysSync());
   };
 
   const onReset = () => {
     setFilteredKeysSync([]);
+    triggerVisible(false);
     internalTriggerFilter([]);
+  };
+
+  const doFilter = (param: FilterConfirmProps = { closeDropdown: true }) => {
+    triggerVisible(!param.closeDropdown);
+    internalTriggerFilter(getFilteredKeysSync());
   };
 
   const onVisibleChange = (newVisible: boolean) => {
@@ -211,7 +225,7 @@ function FilterDropdown<RecordType>(props: FilterDropdownProps<RecordType>) {
       prefixCls: `${dropdownPrefixCls}-custom`,
       setSelectedKeys: (selectedKeys: Key[]) => onSelectKeys({ selectedKeys }),
       selectedKeys: getFilteredKeysSync(),
-      confirm: onConfirm,
+      confirm: doFilter,
       clearFilters: onReset,
       filters: column.filters,
       visible: mergedVisible,

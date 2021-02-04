@@ -1,15 +1,19 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import omit from 'omit.js';
+import omit from 'rc-util/lib/omit';
 import Group from './Group';
 import Search from './Search';
 import TextArea from './TextArea';
 import Password from './Password';
 import { Omit, LiteralUnion } from '../_util/type';
 import ClearableLabeledInput, { hasPrefixSuffix } from './ClearableLabeledInput';
-import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
+import { ConfigConsumer, ConfigConsumerProps, DirectionType } from '../config-provider';
 import SizeContext, { SizeType } from '../config-provider/SizeContext';
 import devWarning from '../_util/devWarning';
+
+export interface InputFocusOptions extends FocusOptions {
+  cursor?: 'start' | 'end' | 'all';
+}
 
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix' | 'type'> {
@@ -88,7 +92,7 @@ export function getInputClassName(
   bordered: boolean,
   size?: SizeType,
   disabled?: boolean,
-  direction?: any,
+  direction?: DirectionType,
 ) {
   return classNames(prefixCls, {
     [`${prefixCls}-sm`]: size === 'small',
@@ -97,6 +101,34 @@ export function getInputClassName(
     [`${prefixCls}-rtl`]: direction === 'rtl',
     [`${prefixCls}-borderless`]: !bordered,
   });
+}
+
+export function triggerFocus(
+  element?: HTMLInputElement | HTMLTextAreaElement,
+  option?: InputFocusOptions,
+) {
+  if (!element) return;
+
+  element.focus(option);
+
+  // Selection content
+  const { cursor } = option || {};
+  if (cursor) {
+    const len = element.value.length;
+
+    switch (cursor) {
+      case 'start':
+        element.setSelectionRange(0, 0);
+        break;
+
+      case 'end':
+        element.setSelectionRange(len, len);
+        break;
+
+      default:
+        element.setSelectionRange(0, len);
+    }
+  }
 }
 
 export interface InputState {
@@ -125,7 +157,7 @@ class Input extends React.Component<InputProps, InputState> {
 
   removePasswordTimeout: number;
 
-  direction: any = 'ltr';
+  direction: DirectionType = 'ltr';
 
   constructor(props: InputProps) {
     super(props);
@@ -171,12 +203,16 @@ class Input extends React.Component<InputProps, InputState> {
     }
   }
 
-  focus = () => {
-    this.input.focus();
+  focus = (option?: InputFocusOptions) => {
+    triggerFocus(this.input, option);
   };
 
   blur() {
     this.input.blur();
+  }
+
+  setSelectionRange(start: number, end: number, direction?: 'forward' | 'backward' | 'none') {
+    this.input.setSelectionRange(start, end, direction);
   }
 
   select() {
@@ -210,6 +246,8 @@ class Input extends React.Component<InputProps, InputState> {
   setValue(value: string, callback?: () => void) {
     if (this.props.value === undefined) {
       this.setState({ value }, callback);
+    } else {
+      callback?.();
     }
   }
 
@@ -228,7 +266,7 @@ class Input extends React.Component<InputProps, InputState> {
   ) => {
     const { className, addonBefore, addonAfter, size: customizeSize, disabled } = this.props;
     // Fix https://fb.me/react-unknown-prop
-    const otherProps = omit(this.props, [
+    const otherProps = omit(this.props as InputProps & { inputType: any }, [
       'prefixCls',
       'onPressEnter',
       'addonBefore',

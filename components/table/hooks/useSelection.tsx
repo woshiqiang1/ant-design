@@ -28,6 +28,7 @@ import {
 // TODO: warning if use ajax!!!
 export const SELECTION_ALL = 'SELECT_ALL' as const;
 export const SELECTION_INVERT = 'SELECT_INVERT' as const;
+export const SELECTION_NONE = 'SELECT_NONE' as const;
 
 function getFixedType<RecordType>(column: ColumnsType<RecordType>[number]): FixedType | undefined {
   return column && column.fixed;
@@ -49,7 +50,8 @@ interface UseSelectionConfig<RecordType> {
 export type INTERNAL_SELECTION_ITEM =
   | SelectionItem
   | typeof SELECTION_ALL
-  | typeof SELECTION_INVERT;
+  | typeof SELECTION_INVERT
+  | typeof SELECTION_NONE;
 
 function flattenData<RecordType>(
   data: RecordType[] | undefined,
@@ -82,6 +84,7 @@ export default function useSelection<RecordType>(
     onSelect,
     onSelectAll,
     onSelectInvert,
+    onSelectNone,
     onSelectMultiple,
     columnWidth: selectionColWidth,
     type: selectionType,
@@ -117,8 +120,11 @@ export default function useSelection<RecordType>(
     () =>
       checkStrictly
         ? { keyEntities: null }
-        : convertDataToEntities((data as unknown) as DataNode[], undefined, getRowKey as any),
-    [data, getRowKey, checkStrictly],
+        : convertDataToEntities((data as unknown) as DataNode[], {
+            externalGetKey: getRowKey as any,
+            childrenPropName: childrenColumnName,
+          }),
+    [data, getRowKey, checkStrictly, childrenColumnName],
   );
 
   // Get flatten data
@@ -150,15 +156,13 @@ export default function useSelection<RecordType>(
   }, [flattedData, getRowKey, getCheckboxProps]);
 
   const isCheckboxDisabled: GetCheckDisabled<RecordType> = useCallback(
-    (r: RecordType) => {
-      return !!checkboxPropsMap.get(getRowKey(r))?.disabled;
-    },
+    (r: RecordType) => !!checkboxPropsMap.get(getRowKey(r))?.disabled,
     [checkboxPropsMap, getRowKey],
   );
 
   const [derivedSelectedKeys, derivedHalfSelectedKeys] = useMemo(() => {
     if (checkStrictly) {
-      return [mergedSelectedKeys, []];
+      return [mergedSelectedKeys || [], []];
     }
     const { checkedKeys, halfCheckedKeys } = conductCheck(
       mergedSelectedKeys,
@@ -166,16 +170,17 @@ export default function useSelection<RecordType>(
       keyEntities as any,
       isCheckboxDisabled as any,
     );
-    return [checkedKeys, halfCheckedKeys];
+    return [checkedKeys || [], halfCheckedKeys];
   }, [mergedSelectedKeys, checkStrictly, keyEntities, isCheckboxDisabled]);
 
   const derivedSelectedKeySet: Set<Key> = useMemo(() => {
     const keys = selectionType === 'radio' ? derivedSelectedKeys.slice(0, 1) : derivedSelectedKeys;
     return new Set(keys);
   }, [derivedSelectedKeys, selectionType]);
-  const derivedHalfSelectedKeySet = useMemo(() => {
-    return selectionType === 'radio' ? new Set() : new Set(derivedHalfSelectedKeys);
-  }, [derivedHalfSelectedKeys, selectionType]);
+  const derivedHalfSelectedKeySet = useMemo(
+    () => (selectionType === 'radio' ? new Set() : new Set(derivedHalfSelectedKeys)),
+    [derivedHalfSelectedKeys, selectionType],
+  );
 
   // Save last selected key to enable range selection
   const [lastSelectedKey, setLastSelectedKey] = useState<Key | null>(null);
@@ -253,7 +258,7 @@ export default function useSelection<RecordType>(
     }
 
     const selectionList: INTERNAL_SELECTION_ITEM[] =
-      selections === true ? [SELECTION_ALL, SELECTION_INVERT] : selections;
+      selections === true ? [SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE] : selections;
 
     return selectionList.map((selection: INTERNAL_SELECTION_ITEM) => {
       if (selection === SELECTION_ALL) {
@@ -282,7 +287,6 @@ export default function useSelection<RecordType>(
             });
 
             const keys = Array.from(keySet);
-            setSelectedKeys(keys);
             if (onSelectInvert) {
               devWarning(
                 false,
@@ -291,6 +295,21 @@ export default function useSelection<RecordType>(
               );
               onSelectInvert(keys);
             }
+
+            setSelectedKeys(keys);
+          },
+        };
+      }
+      if (selection === SELECTION_NONE) {
+        return {
+          key: 'none',
+          text: tableLocale.selectNone,
+          onSelect() {
+            if (onSelectNone) {
+              onSelectNone();
+            }
+
+            setSelectedKeys([]);
           },
         };
       }
@@ -333,7 +352,6 @@ export default function useSelection<RecordType>(
         }
 
         const keys = Array.from(keySet);
-        setSelectedKeys(keys);
 
         if (onSelectAll) {
           onSelectAll(
@@ -342,6 +360,8 @@ export default function useSelection<RecordType>(
             changeKeys.map(k => getRecordByKey(k)),
           );
         }
+
+        setSelectedKeys(keys);
       };
 
       // ===================== Render =====================
@@ -393,6 +413,7 @@ export default function useSelection<RecordType>(
               indeterminate={!checkedCurrentAll && checkedCurrentSome}
               onChange={onSelectAllChange}
               disabled={flattedData.length === 0 || allDisabled}
+              skipGroup
             />
             {customizeSelections}
           </div>
@@ -450,6 +471,7 @@ export default function useSelection<RecordType>(
                 {...checkboxProps}
                 indeterminate={mergedIndeterminate}
                 checked={checked}
+                skipGroup
                 onClick={e => e.stopPropagation()}
                 onChange={({ nativeEvent }) => {
                   const { shiftKey } = nativeEvent;
@@ -497,7 +519,6 @@ export default function useSelection<RecordType>(
                     }
 
                     const keys = Array.from(keySet);
-                    setSelectedKeys(keys);
                     if (onSelectMultiple) {
                       onSelectMultiple(
                         !checked,
@@ -505,6 +526,8 @@ export default function useSelection<RecordType>(
                         changedKeys.map(recordKey => getRecordByKey(recordKey)),
                       );
                     }
+
+                    setSelectedKeys(keys);
                   } else {
                     // Single record selected
                     const originCheckedKeys = derivedSelectedKeys;

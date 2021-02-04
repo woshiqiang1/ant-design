@@ -34,10 +34,14 @@ function collectFilterStates<RecordType>(
     } else if (column.filters || 'filterDropdown' in column || 'onFilter' in column) {
       if ('filteredValue' in column) {
         // Controlled
+        let filteredValues = column.filteredValue;
+        if (!('filterDropdown' in column)) {
+          filteredValues = filteredValues?.map(String) ?? filteredValues;
+        }
         filterStates.push({
           column,
           key: getColumnKey(column, columnPos),
-          filteredKeys: column.filteredValue,
+          filteredKeys: filteredValues,
           forceFiltered: column.filtered,
         });
       } else {
@@ -70,17 +74,19 @@ function injectFilter<RecordType>(
     const columnPos = getColumnPos(index, pos);
     const { filterMultiple = true } = column as ColumnType<RecordType>;
 
-    if (column.filters || 'filterDropdown' in column) {
-      const columnKey = getColumnKey(column, columnPos);
+    let newColumn: ColumnsType<RecordType>[number] = column;
+
+    if (newColumn.filters || newColumn.filterDropdown) {
+      const columnKey = getColumnKey(newColumn, columnPos);
       const filterState = filterStates.find(({ key }) => columnKey === key);
 
-      return {
-        ...column,
+      newColumn = {
+        ...newColumn,
         title: (renderProps: ColumnTitleProps<RecordType>) => (
           <FilterDropdown
             prefixCls={`${prefixCls}-filter`}
             dropdownPrefixCls={dropdownPrefixCls}
-            column={column}
+            column={newColumn}
             columnKey={columnKey}
             filterState={filterState}
             filterMultiple={filterMultiple}
@@ -94,13 +100,13 @@ function injectFilter<RecordType>(
       };
     }
 
-    if ('children' in column) {
-      return {
-        ...column,
+    if ('children' in newColumn) {
+      newColumn = {
+        ...newColumn,
         children: injectFilter(
           prefixCls,
           dropdownPrefixCls,
-          column.children,
+          newColumn.children,
           filterStates,
           triggerFilter,
           getPopupContainer,
@@ -110,18 +116,8 @@ function injectFilter<RecordType>(
       };
     }
 
-    return column;
+    return newColumn;
   });
-}
-
-function generateFilterInfo<RecordType>(filterStates: FilterState<RecordType>[]) {
-  const currentFilters: Record<string, Key[] | null> = {};
-
-  filterStates.forEach(({ key, filteredKeys }) => {
-    currentFilters[key] = filteredKeys || null;
-  });
-
-  return currentFilters;
 }
 
 function flattenKeys(filters?: ColumnFilterItem[]) {
@@ -133,6 +129,24 @@ function flattenKeys(filters?: ColumnFilterItem[]) {
     }
   });
   return keys;
+}
+
+function generateFilterInfo<RecordType>(filterStates: FilterState<RecordType>[]) {
+  const currentFilters: Record<string, (Key | boolean)[] | null> = {};
+
+  filterStates.forEach(({ key, filteredKeys, column }) => {
+    const { filters, filterDropdown } = column;
+    if (filterDropdown) {
+      currentFilters[key] = filteredKeys || null;
+    } else if (Array.isArray(filteredKeys)) {
+      const keys = flattenKeys(filters);
+      currentFilters[key] = keys.filter(originKey => filteredKeys.includes(String(originKey)));
+    } else {
+      currentFilters[key] = null;
+    }
+  });
+
+  return currentFilters;
 }
 
 export function getFilterData<RecordType>(
@@ -164,7 +178,7 @@ interface FilterConfig<RecordType> {
   mergedColumns: ColumnsType<RecordType>;
   locale: TableLocale;
   onFilterChange: (
-    filters: Record<string, Key[] | null>,
+    filters: Record<string, (Key | boolean)[] | null>,
     filterStates: FilterState<RecordType>[],
   ) => void;
   getPopupContainer?: GetPopupContainer;
@@ -180,7 +194,7 @@ function useFilter<RecordType>({
 }: FilterConfig<RecordType>): [
   TransformColumns<RecordType>,
   FilterState<RecordType>[],
-  () => Record<string, Key[] | null>,
+  () => Record<string, (Key | boolean)[] | null>,
 ] {
   const [filterStates, setFilterStates] = React.useState<FilterState<RecordType>[]>(
     collectFilterStates(mergedColumns, true),

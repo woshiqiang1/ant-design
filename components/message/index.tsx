@@ -106,10 +106,8 @@ export interface ThenableArgument {
   (val: any): void;
 }
 
-export interface MessageType {
+export interface MessageType extends PromiseLike<any> {
   (): void;
-  then: (fill: ThenableArgument, reject: ThenableArgument) => Promise<void>;
-  promise: Promise<void>;
 }
 
 const typeToIcon = {
@@ -129,6 +127,7 @@ export interface ArgsProps {
   key?: string | number;
   style?: React.CSSProperties;
   className?: string;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 function getRCNoticeProps(args: ArgsProps, prefixCls: string): NoticeContent {
@@ -150,6 +149,7 @@ function getRCNoticeProps(args: ArgsProps, prefixCls: string): NoticeContent {
       </div>
     ),
     onClose: args.onClose,
+    onClick: args.onClick,
   };
 }
 
@@ -193,10 +193,16 @@ function isArgsProps(content: JointContent): content is ArgsProps {
 const api: any = {
   open: notice,
   config: setMessageConfig,
-  destroy() {
+  destroy(messageKey?: React.Key) {
     if (messageInstance) {
-      messageInstance.destroy();
-      messageInstance = null;
+      if (messageKey) {
+        const { removeNotice } = messageInstance;
+        removeNotice(messageKey);
+      } else {
+        const { destroy } = messageInstance;
+        destroy();
+        messageInstance = null;
+      }
     }
   },
 };
@@ -237,8 +243,11 @@ export interface MessageInstance {
 export interface MessageApi extends MessageInstance {
   warn(content: JointContent, duration?: ConfigDuration, onClose?: ConfigOnClose): MessageType;
   config(options: ConfigOptions): void;
-  destroy(): void;
+  destroy(messageKey?: React.Key): void;
   useMessage(): [MessageInstance, React.ReactElement];
 }
+
+/** @private test only function. Not work on production */
+export const getInstance = () => (process.env.NODE_ENV === 'test' ? messageInstance : null);
 
 export default api as MessageApi;

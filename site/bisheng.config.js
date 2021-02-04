@@ -1,14 +1,14 @@
 const path = require('path');
 const replaceLib = require('@ant-design/tools/lib/replaceLib');
 const getWebpackConfig = require('@ant-design/tools/lib/getWebpackConfig');
-const EsbuildPlugin = require('esbuild-webpack-plugin').default;
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const { ESBuildPlugin, ESBuildMinifyPlugin } = require('esbuild-loader');
 const { version } = require('../package.json');
 const themeConfig = require('./themeConfig');
 
 const { webpack } = getWebpackConfig;
 
 const isDev = process.env.NODE_ENV === 'development';
-const usePreact = process.env.REACT_ENV === 'preact';
 
 function alertBabelConfig(rules) {
   rules.forEach(rule => {
@@ -71,16 +71,6 @@ module.exports = {
       'react-router-dom': 'ReactRouterDOM',
     };
 
-    if (usePreact) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        react: 'preact-compat',
-        'react-dom': 'preact-compat',
-        'create-react-class': 'preact-compat/lib/create-react-class',
-        'react-router': 'react-router',
-      };
-    }
-
     if (isDev) {
       config.devtool = 'source-map';
 
@@ -89,7 +79,13 @@ module.exports = {
       config.resolve.alias = { ...config.resolve.alias, react: require.resolve('react') };
     } else if (process.env.ESBUILD) {
       // use esbuild
-      config.optimization.minimizer = [new EsbuildPlugin()];
+      config.plugins.push(new ESBuildPlugin());
+      config.optimization.minimizer = [
+        new ESBuildMinifyPlugin({
+          target: 'es2015',
+        }),
+        new CssMinimizerPlugin(),
+      ];
     }
 
     alertBabelConfig(config.module.rules);
@@ -118,6 +114,5 @@ module.exports = {
 
   htmlTemplateExtraData: {
     isDev,
-    usePreact,
   },
 };

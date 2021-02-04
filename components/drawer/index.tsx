@@ -3,10 +3,8 @@ import RcDrawer from 'rc-drawer';
 import getScrollBarSize from 'rc-util/lib/getScrollBarSize';
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
 import classNames from 'classnames';
-import omit from 'omit.js';
-
-import { ConfigConsumerProps } from '../config-provider';
-import { withConfigConsumer, ConfigConsumer } from '../config-provider/context';
+import omit from 'rc-util/lib/omit';
+import { ConfigContext, DirectionType } from '../config-provider';
 import { tuple } from '../_util/type';
 
 const DrawerContext = React.createContext<Drawer | null>(null);
@@ -33,7 +31,7 @@ export interface DrawerProps {
   mask?: boolean;
   maskStyle?: React.CSSProperties;
   style?: React.CSSProperties;
-  /** wrapper dom node style of header and body */
+  /** Wrapper dom node style of header and body */
   drawerStyle?: React.CSSProperties;
   headerStyle?: React.CSSProperties;
   bodyStyle?: React.CSSProperties;
@@ -58,8 +56,12 @@ export interface IDrawerState {
   push?: boolean;
 }
 
+interface InternalDrawerProps extends DrawerProps {
+  direction: DirectionType;
+}
+
 const defaultPushState: PushState = { distance: 180 };
-class Drawer extends React.Component<DrawerProps & ConfigConsumerProps, IDrawerState> {
+class Drawer extends React.Component<InternalDrawerProps, IDrawerState> {
   static defaultProps = {
     width: 256,
     height: 256,
@@ -218,8 +220,8 @@ class Drawer extends React.Component<DrawerProps & ConfigConsumerProps, IDrawerS
     const { closable, closeIcon = <CloseOutlined />, prefixCls, onClose } = this.props;
     return (
       closable && (
-        // eslint-disable-next-line react/button-has-type
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close"
           className={`${prefixCls}-close`}
@@ -275,77 +277,47 @@ class Drawer extends React.Component<DrawerProps & ConfigConsumerProps, IDrawerS
   renderProvider = (value: Drawer) => {
     this.parentDrawer = value;
 
+    const { prefixCls, placement, className, mask, direction, visible, ...rest } = this.props;
+
+    const drawerClassName = classNames(
+      {
+        'no-mask': !mask,
+        [`${prefixCls}-rtl`]: direction === 'rtl',
+      },
+      className,
+    );
+    const offsetStyle = mask ? this.getOffsetStyle() : {};
+
     return (
-      <ConfigConsumer>
-        {({ getPopupContainer, getPrefixCls }) => {
-          const {
-            prefixCls: customizePrefixCls,
-            placement,
-            className,
-            mask,
-            direction,
-            visible,
-            ...rest
-          } = this.props;
-
-          const prefixCls = getPrefixCls('select', customizePrefixCls);
-          const drawerClassName = classNames(className, {
-            'no-mask': !mask,
-            [`${prefixCls}-rtl`]: direction === 'rtl',
-          });
-          const offsetStyle = mask ? this.getOffsetStyle() : {};
-
-          return (
-            <DrawerContext.Provider value={this}>
-              <RcDrawer
-                handler={false}
-                {...omit(rest, [
-                  'zIndex',
-                  'style',
-                  'closable',
-                  'closeIcon',
-                  'destroyOnClose',
-                  'drawerStyle',
-                  'headerStyle',
-                  'bodyStyle',
-                  'footerStyle',
-                  'footer',
-                  'locale',
-                  'title',
-                  'push',
-                  'visible',
-                  'getPopupContainer',
-                  'rootPrefixCls',
-                  'getPrefixCls',
-                  'renderEmpty',
-                  'csp',
-                  'pageHeader',
-                  'autoInsertSpaceInButton',
-                  'width',
-                  'height',
-                  'dropdownMatchSelectWidth',
-                  'getTargetContainer',
-                ])}
-                getContainer={
-                  // 有可能为 false，所以不能直接判断
-                  rest.getContainer === undefined && getPopupContainer
-                    ? () => getPopupContainer(document.body)
-                    : rest.getContainer
-                }
-                {...offsetStyle}
-                prefixCls={prefixCls}
-                open={visible}
-                showMask={mask}
-                placement={placement}
-                style={this.getRcDrawerStyle()}
-                className={drawerClassName}
-              >
-                {this.renderBody()}
-              </RcDrawer>
-            </DrawerContext.Provider>
-          );
-        }}
-      </ConfigConsumer>
+      <DrawerContext.Provider value={this}>
+        <RcDrawer
+          handler={false}
+          {...omit(rest, [
+            'zIndex',
+            'closable',
+            'closeIcon',
+            'destroyOnClose',
+            'drawerStyle',
+            'headerStyle',
+            'bodyStyle',
+            'footerStyle',
+            'footer',
+            'title',
+            'push',
+            'width',
+            'height',
+          ])}
+          {...offsetStyle}
+          prefixCls={prefixCls}
+          open={visible}
+          showMask={mask}
+          placement={placement}
+          style={this.getRcDrawerStyle()}
+          className={drawerClassName}
+        >
+          {this.renderBody()}
+        </RcDrawer>
+      </DrawerContext.Provider>
     );
   };
 
@@ -354,6 +326,22 @@ class Drawer extends React.Component<DrawerProps & ConfigConsumerProps, IDrawerS
   }
 }
 
-export default withConfigConsumer<DrawerProps>({
-  prefixCls: 'drawer',
-})(Drawer);
+const DrawerWrapper: React.FC<DrawerProps> = props => {
+  const { prefixCls: customizePrefixCls, getContainer: customizeGetContainer } = props;
+  const { getPopupContainer, getPrefixCls, direction } = React.useContext(ConfigContext);
+
+  const prefixCls = getPrefixCls('drawer', customizePrefixCls);
+  const getContainer =
+    // 有可能为 false，所以不能直接判断
+    customizeGetContainer === undefined && getPopupContainer
+      ? () => getPopupContainer(document.body)
+      : customizeGetContainer;
+
+  return (
+    <Drawer {...props} prefixCls={prefixCls} getContainer={getContainer} direction={direction} />
+  );
+};
+
+DrawerWrapper.displayName = 'DrawerWrapper';
+
+export default DrawerWrapper;

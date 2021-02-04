@@ -1,12 +1,13 @@
 import * as React from 'react';
 import RcMenu, { Divider, ItemGroup, MenuProps as RcMenuProps } from 'rc-menu';
 import classNames from 'classnames';
-import SubMenu from './SubMenu';
-import Item from './MenuItem';
+import SubMenu, { SubMenuProps } from './SubMenu';
+import Item, { MenuItemProps } from './MenuItem';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
 import devWarning from '../_util/devWarning';
 import { SiderContext, SiderContextProps } from '../layout/Sider';
 import collapseMotion from '../_util/motion';
+import { cloneElement } from '../_util/reactNode';
 import MenuContext, { MenuTheme } from './MenuContext';
 
 export { MenuItemGroupProps } from 'rc-menu';
@@ -53,7 +54,7 @@ class InternalMenu extends React.Component<InternalMenuProps> {
   }
 
   renderMenu = ({ getPopupContainer, getPrefixCls, direction }: ConfigConsumerProps) => {
-    const { prefixCls: customizePrefixCls, className, theme } = this.props;
+    const { prefixCls: customizePrefixCls, className, theme, expandIcon } = this.props;
     const defaultMotions = {
       horizontal: { motionName: 'slide-up' },
       inline: collapseMotion,
@@ -61,9 +62,13 @@ class InternalMenu extends React.Component<InternalMenuProps> {
     };
 
     const prefixCls = getPrefixCls('menu', customizePrefixCls);
-    const menuClassName = classNames(className, `${prefixCls}-${theme}`, {
-      [`${prefixCls}-inline-collapsed`]: this.getInlineCollapsed(),
-    });
+    const menuClassName = classNames(
+      `${prefixCls}-${theme}`,
+      {
+        [`${prefixCls}-inline-collapsed`]: this.getInlineCollapsed(),
+      },
+      className,
+    );
 
     return (
       <MenuContext.Provider
@@ -80,6 +85,9 @@ class InternalMenu extends React.Component<InternalMenuProps> {
           prefixCls={prefixCls}
           direction={direction}
           defaultMotions={defaultMotions}
+          expandIcon={cloneElement(expandIcon, {
+            className: `${prefixCls}-submenu-expand-icon`,
+          })}
         />
       </MenuContext.Provider>
     );
@@ -91,7 +99,7 @@ class InternalMenu extends React.Component<InternalMenuProps> {
 }
 
 // We should keep this as ref-able
-export default class Menu extends React.Component<MenuProps, {}> {
+class Menu extends React.Component<MenuProps, {}> {
   static Divider = Divider;
 
   static Item = Item;
@@ -108,3 +116,7 @@ export default class Menu extends React.Component<MenuProps, {}> {
     );
   }
 }
+
+export { MenuTheme, SubMenuProps, MenuItemProps };
+
+export default Menu;

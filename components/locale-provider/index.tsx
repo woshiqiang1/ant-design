@@ -32,7 +32,11 @@ export interface Locale {
   Icon?: Object;
   Text?: Object;
   Form?: {
+    optional?: string;
     defaultValidateMessages: ValidateMessages;
+  };
+  Image?: {
+    preview: string;
   };
 }
 

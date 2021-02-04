@@ -19,6 +19,7 @@ import LocaleProvider from '..';
 import arEG from '../ar_EG';
 import azAZ from '../az_AZ';
 import bgBG from '../bg_BG';
+import byBY from '../by_BY';
 import caES from '../ca_ES';
 import csCZ from '../cs_CZ';
 import deDE from '../de_DE';
@@ -33,6 +34,7 @@ import fiFI from '../fi_FI';
 import frBE from '../fr_BE';
 import frFR from '../fr_FR';
 import gaIE from '../ga_IE';
+import glES from '../gl_ES';
 import heIL from '../he_IL';
 import hiIN from '../hi_IN';
 import hrHR from '../hr_HR';
@@ -42,10 +44,13 @@ import idID from '../id_ID';
 import isIS from '../is_IS';
 import itIT from '../it_IT';
 import jaJP from '../ja_JP';
+import kkKZ from '../kk_KZ';
 import knIN from '../kn_IN';
 import koKR from '../ko_KR';
+import kmrIQ from '../kmr_IQ';
 import kuIQ from '../ku_IQ';
 import lvLV from '../lv_LV';
+import ltLT from '../lt_LT';
 import mkMK from '../mk_MK';
 import mnMN from '../mn_MN';
 import msMY from '../ms_MY';
@@ -75,6 +80,7 @@ const locales = [
   azAZ,
   arEG,
   bgBG,
+  byBY,
   caES,
   csCZ,
   daDK,
@@ -89,6 +95,7 @@ const locales = [
   frBE,
   frFR,
   gaIE,
+  glES,
   heIL,
   hiIN,
   hrHR,
@@ -97,9 +104,12 @@ const locales = [
   isIS,
   itIT,
   jaJP,
+  kkKZ,
   knIN,
   koKR,
+  kmrIQ,
   kuIQ,
+  ltLT,
   mkMK,
   msMY,
   mnMN,

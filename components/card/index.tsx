@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import omit from 'omit.js';
+import omit from 'rc-util/lib/omit';
 import Grid from './Grid';
 import Meta from './Meta';
 import Tabs, { TabsProps } from '../tabs';
@@ -183,16 +183,20 @@ const Card: CardInterface = props => {
     ) : null;
   const divProps = omit(others, ['onTabChange']);
   const mergedSize = customizeSize || size;
-  const classString = classNames(prefixCls, className, {
-    [`${prefixCls}-loading`]: loading,
-    [`${prefixCls}-bordered`]: bordered,
-    [`${prefixCls}-hoverable`]: hoverable,
-    [`${prefixCls}-contain-grid`]: isContainGrid(),
-    [`${prefixCls}-contain-tabs`]: tabList && tabList.length,
-    [`${prefixCls}-${mergedSize}`]: mergedSize,
-    [`${prefixCls}-type-${type}`]: !!type,
-    [`${prefixCls}-rtl`]: direction === 'rtl',
-  });
+  const classString = classNames(
+    prefixCls,
+    {
+      [`${prefixCls}-loading`]: loading,
+      [`${prefixCls}-bordered`]: bordered,
+      [`${prefixCls}-hoverable`]: hoverable,
+      [`${prefixCls}-contain-grid`]: isContainGrid(),
+      [`${prefixCls}-contain-tabs`]: tabList && tabList.length,
+      [`${prefixCls}-${mergedSize}`]: mergedSize,
+      [`${prefixCls}-type-${type}`]: !!type,
+      [`${prefixCls}-rtl`]: direction === 'rtl',
+    },
+    className,
+  );
 
   return (
     <div {...divProps} className={classString}>
