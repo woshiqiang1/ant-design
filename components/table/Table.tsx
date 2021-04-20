@@ -18,7 +18,6 @@ import {
   ColumnsType,
   TableCurrentDataSource,
   SorterResult,
-  Key,
   GetPopupContainer,
   ExpandableConfig,
   ExpandType,
@@ -26,6 +25,7 @@ import {
   SortOrder,
   TableLocale,
   TableAction,
+  FilterValue,
 } from './interface';
 import useSelection, {
   SELECTION_ALL,
@@ -54,7 +54,7 @@ interface ChangeEventInfo<RecordType> {
     pageSize?: number;
     total?: number;
   };
-  filters: Record<string, (Key | boolean)[] | null>;
+  filters: Record<string, FilterValue | null>;
   sorter: SorterResult<RecordType> | SorterResult<RecordType>[];
 
   filterStates: FilterState<RecordType>[];
@@ -85,7 +85,7 @@ export interface TableProps<RecordType>
 
   onChange?: (
     pagination: TablePaginationConfig,
-    filters: Record<string, (Key | boolean)[] | null>,
+    filters: Record<string, FilterValue | null>,
     sorter: SorterResult<RecordType> | SorterResult<RecordType>[],
     extra: TableCurrentDataSource<RecordType>,
   ) => void;
@@ -226,15 +226,13 @@ function Table<RecordType extends object = any>(props: TableProps<RecordType>) {
       });
     }
 
-    if (onChange) {
-      onChange(changeInfo.pagination!, changeInfo.filters!, changeInfo.sorter!, {
-        currentDataSource: getFilterData(
-          getSortData(rawData, changeInfo.sorterStates!, childrenColumnName),
-          changeInfo.filterStates!,
-        ),
-        action,
-      });
-    }
+    onChange?.(changeInfo.pagination!, changeInfo.filters!, changeInfo.sorter!, {
+      currentDataSource: getFilterData(
+        getSortData(rawData, changeInfo.sorterStates!, childrenColumnName),
+        changeInfo.filterStates!,
+      ),
+      action,
+    });
   };
 
   /**
@@ -275,7 +273,7 @@ function Table<RecordType extends object = any>(props: TableProps<RecordType>) {
 
   // ============================ Filter ============================
   const onFilterChange = (
-    filters: Record<string, (Key | boolean)[]>,
+    filters: Record<string, FilterValue>,
     filterStates: FilterState<RecordType>[],
   ) => {
     triggerOnChange(
@@ -439,18 +437,19 @@ function Table<RecordType extends object = any>(props: TableProps<RecordType>) {
       />
     );
     const defaultPosition = direction === 'rtl' ? 'left' : 'right';
-    if (mergedPagination.position !== null && Array.isArray(mergedPagination.position)) {
-      const topPos = mergedPagination.position.find(p => p.indexOf('top') !== -1);
-      const bottomPos = mergedPagination.position.find(p => p.indexOf('bottom') !== -1);
-      if (!topPos && !bottomPos) {
+    const { position } = mergedPagination;
+    if (position !== null && Array.isArray(position)) {
+      const topPos = position.find(p => p.indexOf('top') !== -1);
+      const bottomPos = position.find(p => p.indexOf('bottom') !== -1);
+      const isDisable = position.every(p => `${p}` === 'none');
+      if (!topPos && !bottomPos && !isDisable) {
         bottomPaginationNode = renderPagination(defaultPosition);
-      } else {
-        if (topPos) {
-          topPaginationNode = renderPagination(topPos!.toLowerCase().replace('top', ''));
-        }
-        if (bottomPos) {
-          bottomPaginationNode = renderPagination(bottomPos!.toLowerCase().replace('bottom', ''));
-        }
+      }
+      if (topPos) {
+        topPaginationNode = renderPagination(topPos!.toLowerCase().replace('top', ''));
+      }
+      if (bottomPos) {
+        bottomPaginationNode = renderPagination(bottomPos!.toLowerCase().replace('bottom', ''));
       }
     } else {
       bottomPaginationNode = renderPagination(defaultPosition);

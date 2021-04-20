@@ -68,6 +68,8 @@ export type ColumnTitle<RecordType> =
   | React.ReactNode
   | ((props: ColumnTitleProps<RecordType>) => React.ReactNode);
 
+export type FilterValue = (Key | boolean)[];
+export type FilterKey = Key[] | null;
 export interface FilterConfirmProps {
   closeDropdown: boolean;
 }
@@ -76,7 +78,7 @@ export interface FilterDropdownProps {
   prefixCls: string;
   setSelectedKeys: (selectedKeys: React.Key[]) => void;
   selectedKeys: React.Key[];
-  confirm: (param: FilterConfirmProps) => void;
+  confirm: (param?: FilterConfirmProps) => void;
   clearFilters?: () => void;
   filters?: ColumnFilterItem[];
   visible: boolean;
@@ -103,8 +105,8 @@ export interface ColumnType<RecordType> extends RcColumnType<RecordType> {
   filters?: ColumnFilterItem[];
   filterDropdown?: React.ReactNode | ((props: FilterDropdownProps) => React.ReactNode);
   filterMultiple?: boolean;
-  filteredValue?: Key[] | null;
-  defaultFilteredValue?: Key[] | null;
+  filteredValue?: FilterValue | null;
+  defaultFilteredValue?: FilterValue | null;
   filterIcon?: React.ReactNode | ((filtered: boolean) => React.ReactNode);
   onFilter?: (value: string | number | boolean, record: RecordType) => boolean;
   filterDropdownVisible?: boolean;
@@ -141,6 +143,7 @@ export interface TableRowSelection<T> {
   preserveSelectedRowKeys?: boolean;
   type?: RowSelectionType;
   selectedRowKeys?: Key[];
+  defaultSelectedRowKeys?: Key[];
   onChange?: (selectedRowKeys: Key[], selectedRows: T[]) => void;
   getCheckboxProps?: (record: T) => Partial<Omit<CheckboxProps, 'checked' | 'defaultChecked'>>;
   onSelect?: SelectionSelectFn<T>;

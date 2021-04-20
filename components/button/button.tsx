@@ -193,13 +193,13 @@ const InternalButton: React.ForwardRefRenderFunction<unknown, ButtonProps> = (pr
   React.useEffect(fixTwoCNChar, [buttonRef]);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement, MouseEvent>) => {
-    const { onClick } = props;
-    if (innerLoading) {
+    const { onClick, disabled } = props;
+    // https://github.com/ant-design/ant-design/issues/30207
+    if (innerLoading || disabled) {
+      e.preventDefault();
       return;
     }
-    if (onClick) {
-      (onClick as React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>)(e);
-    }
+    (onClick as React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>)?.(e);
   };
 
   devWarning(
@@ -239,7 +239,7 @@ const InternalButton: React.ForwardRefRenderFunction<unknown, ButtonProps> = (pr
       [`${prefixCls}-${type}`]: type,
       [`${prefixCls}-${shape}`]: shape,
       [`${prefixCls}-${sizeCls}`]: sizeCls,
-      [`${prefixCls}-icon-only`]: !children && children !== 0 && iconType,
+      [`${prefixCls}-icon-only`]: !children && children !== 0 && !!iconType,
       [`${prefixCls}-background-ghost`]: ghost && !isUnborderedButtonType(type),
       [`${prefixCls}-loading`]: innerLoading,
       [`${prefixCls}-two-chinese-chars`]: hasTwoCNChar && autoInsertSpace,

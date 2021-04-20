@@ -79,6 +79,7 @@ export default function useSelection<RecordType>(
   const {
     preserveSelectedRowKeys,
     selectedRowKeys,
+    defaultSelectedRowKeys,
     getCheckboxProps,
     onChange: onSelectionChange,
     onSelect,
@@ -112,9 +113,12 @@ export default function useSelection<RecordType>(
   const preserveRecordsRef = React.useRef(new Map<Key, RecordType>());
 
   // ========================= Keys =========================
-  const [mergedSelectedKeys, setMergedSelectedKeys] = useMergedState(selectedRowKeys || [], {
-    value: selectedRowKeys,
-  });
+  const [mergedSelectedKeys, setMergedSelectedKeys] = useMergedState(
+    selectedRowKeys || defaultSelectedRowKeys || [],
+    {
+      value: selectedRowKeys,
+    },
+  );
 
   const { keyEntities } = useMemo(
     () =>
@@ -231,9 +235,7 @@ export default function useSelection<RecordType>(
 
       setMergedSelectedKeys(availableKeys);
 
-      if (onSelectionChange) {
-        onSelectionChange(availableKeys, records);
-      }
+      onSelectionChange?.(availableKeys, records);
     },
     [setMergedSelectedKeys, getRecordByKey, onSelectionChange, preserveSelectedRowKeys],
   );
@@ -305,10 +307,7 @@ export default function useSelection<RecordType>(
           key: 'none',
           text: tableLocale.selectNone,
           onSelect() {
-            if (onSelectNone) {
-              onSelectNone();
-            }
-
+            onSelectNone?.();
             setSelectedKeys([]);
           },
         };
@@ -353,13 +352,11 @@ export default function useSelection<RecordType>(
 
         const keys = Array.from(keySet);
 
-        if (onSelectAll) {
-          onSelectAll(
-            !checkedCurrentAll,
-            keys.map(k => getRecordByKey(k)),
-            changeKeys.map(k => getRecordByKey(k)),
-          );
-        }
+        onSelectAll?.(
+          !checkedCurrentAll,
+          keys.map(k => getRecordByKey(k)),
+          changeKeys.map(k => getRecordByKey(k)),
+        );
 
         setSelectedKeys(keys);
       };
@@ -378,9 +375,7 @@ export default function useSelection<RecordType>(
                   <Menu.Item
                     key={key || index}
                     onClick={() => {
-                      if (onSelectionClick) {
-                        onSelectionClick(recordKeys);
-                      }
+                      onSelectionClick?.(recordKeys);
                     }}
                   >
                     {text}
@@ -457,7 +452,7 @@ export default function useSelection<RecordType>(
           if (expandType === 'nest') {
             mergedIndeterminate = indeterminate;
             devWarning(
-              !(typeof checkboxProps?.indeterminate === 'boolean'),
+              typeof checkboxProps?.indeterminate !== 'boolean',
               'Table',
               'set `indeterminate` using `rowSelection.getCheckboxProps` is not allowed with tree structured dataSource.',
             );
@@ -519,13 +514,11 @@ export default function useSelection<RecordType>(
                     }
 
                     const keys = Array.from(keySet);
-                    if (onSelectMultiple) {
-                      onSelectMultiple(
-                        !checked,
-                        keys.map(recordKey => getRecordByKey(recordKey)),
-                        changedKeys.map(recordKey => getRecordByKey(recordKey)),
-                      );
-                    }
+                    onSelectMultiple?.(
+                      !checked,
+                      keys.map(recordKey => getRecordByKey(recordKey)),
+                      changedKeys.map(recordKey => getRecordByKey(recordKey)),
+                    );
 
                     setSelectedKeys(keys);
                   } else {

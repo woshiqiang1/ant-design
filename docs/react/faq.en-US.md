@@ -21,7 +21,7 @@ Related issue: [#3487](https://github.com/ant-design/ant-design/issues/3487) [#3
 
 ### How do I prevent `Select Dropdown DatePicker TimePicker Popover Popconfirm` scrolling with the page?
 
-Use `<Select getPopupContainer={trigger => trigger.parentElement}>` ([API reference](https://ant.design/components/select-cn/#Select-props)) to render a component inside the scroll area. If you need to config this globally in your application, try `<ConfigProvider getPopupContainer={trigger => trigger.parentElement}>` ([API reference](https://ant.design/components/config-provider-cn/#API))
+Use `<Select getPopupContainer={trigger => trigger.parentElement}>` ([API reference](/components/select/#Select-props)) to render a component inside the scroll area. If you need to config this globally in your application, try `<ConfigProvider getPopupContainer={trigger => trigger.parentElement}>` ([API reference](/components/config-provider/#API))
 
 And make sure that parentElement is `position: relative` or `position: absolute`.
 
@@ -118,17 +118,11 @@ Static methods like message/notification/Modal.confirm are not using the same re
 
 1. Replace original usages with [message.useMessage](/components/message/#components-message-demo-hooks), [notification.useNotification](/components/notification/#Why-I-can-not-access-context,-redux,-ConfigProvider-locale/prefixCls-in-notification) and [Modal.useModal](/components/modal/#Why-I-can-not-access-context,-redux,-ConfigProvider-locale/prefixCls-in-Modal.xxx).
 
-2. Use `message.config`, `notification.config` and `Modal.config` to config `prefixCls` globally.
+2. Use `ConfigProvider.config` to config `prefixCls` globally.
 
 ```js
-message.config({
-  prefixCls: 'ant-message',
-});
-notification.config({
-  prefixCls: 'ant-notification',
-});
-Modal.config({
-  rootPrefixCls: 'ant',
+ConfigProvider.config({
+  prefixCls: 'ant',
 });
 ```
 

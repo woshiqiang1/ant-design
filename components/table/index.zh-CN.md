@@ -74,7 +74,7 @@ const columns = [
 | expandable | 配置展开属性 | [expandable](#expandable) | - |  |
 | footer | 表格尾部 | function(currentPageData) | - |  |
 | getPopupContainer | 设置表格内各类浮层的渲染节点，如筛选菜单 | (triggerNode) => HTMLElement | () => TableHtmlElement |  |
-| loading | 页面是否加载中 | boolean \| [object](/components/spin/#API) ([更多](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135)) | false |  |
+| loading | 页面是否加载中 | boolean \| [Spin Props](/components/spin/#API) | false |  |
 | locale | 默认文案设置，目前包括排序、过滤、空数据文案 | object | filterConfirm: `确定` <br> filterReset: `重置` <br> emptyText: `暂无数据` <br> [默认值](https://github.com/ant-design/ant-design/blob/4ad1ccac277782d7ed14f7e5d02d6346aae0db67/components/locale/default.tsx#L19) |  |
 | pagination | 分页器，参考[配置项](#pagination)或 [pagination](/components/pagination/) 文档，设为 false 时不展示和进行分页 | object | - |  |
 | rowClassName | 表格行的类名 | function(record, index): string | - |  |
@@ -128,6 +128,7 @@ const columns = [
 | dataIndex | 列数据在数据项中对应的路径，支持通过数组查询嵌套路径 | string \| string\[] | - |  |
 | defaultFilteredValue | 默认筛选值 | string\[] | - |  |
 | defaultSortOrder | 默认排序顺序 | `ascend` \| `descend` | - |  |
+| editable | 是否可编辑 | boolean | false |  |
 | ellipsis | 超过宽度将自动省略，暂不支持和排序筛选一起使用。<br />设置为 `true` 或 `{ showTitle?: boolean }` 时，表格布局将变成 `tableLayout="fixed"`。 | boolean \| { showTitle?: boolean } | false | showTitle: 4.3.0 |
 | filterDropdown | 可以自定义筛选菜单，此函数只负责渲染图层，需要自行编写各种交互 | ReactNode \| (props: [FilterDropdownProps](https://git.io/fjP5h)) => ReactNode | - |  |
 | filterDropdownVisible | 用于控制自定义筛选菜单是否可见 | boolean | - |  |
@@ -174,8 +175,8 @@ const columns = [
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| columnWidth | 自定义展开列宽度 | string \| number | - |
 | childrenColumnName | 指定树形结构的列名 | string | children |
+| columnWidth | 自定义展开列宽度 | string \| number | - |
 | defaultExpandAllRows | 初始时，是否展开所有行 | boolean | false |
 | defaultExpandedRowKeys | 默认展开的行 | string\[] | - |
 | expandedRowClassName | 展开行的 className | function(record, index, indent): string | - |
@@ -204,8 +205,9 @@ const columns = [
 | preserveSelectedRowKeys | 当数据被删除时仍然保留选项的 `key` | boolean | - | 4.4.0 |
 | renderCell | 渲染勾选框，用法与 Column 的 `render` 相同 | function(checked, record, index, originNode) {} | - | 4.1.0 |
 | selectedRowKeys | 指定选中项的 key 数组，需要和 onChange 进行配合 | string\[] \| number\[] | \[] |  |
+| defaultSelectedRowKeys | 默认选中项的 key 数组 | string\[] \| number\[] | \[] |  |
 | selections | 自定义选择项 [配置项](#selection), 设为 `true` 时使用默认选择项 | object\[] \| boolean | true |  |
-| type | 多选/单选，`checkbox` or `radio` | string | `checkbox` |  |
+| type | 多选/单选 | `checkbox` \| `radio` | `checkbox` |  |
 | onChange | 选中项发生变化时的回调 | function(selectedRowKeys, selectedRows) | - |  |
 | onSelect | 用户手动选择/取消选择某行的回调 | function(record, selected, selectedRows, nativeEvent) | - |  |
 | onSelectAll | 用户手动选择/取消选择所有行的回调 | function(selected, selectedRows, changeRows) | - |  |

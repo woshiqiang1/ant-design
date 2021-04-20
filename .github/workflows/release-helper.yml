@@ -1,4 +1,11 @@
-name: 🤖 Auto Make Release
+# Current release process:
+# 1. `npm run pub` will call antd-tools `run pub`
+# 2. antd-tools `run pub` will generate a new tag
+# 3. antd-tools `run pub` will trigger `npm publish` at the same time
+# 4. Then the new tag will trigger this current action
+# 5. The action will generate a new release, and publish DingDing notification at the same time
+
+name: Release Helper
 
 on:
   create
@@ -11,7 +18,6 @@ jobs:
         if: github.event.ref_type == 'tag'
         uses: actions-cool/release-helper@v1
         with:
-          token: ${{ secrets.ANT_BOT_TOKEN }}
           triger: 'tag'
           changelogs: 'CHANGELOG.en-US.md, CHANGELOG.zh-CN.md'
           branch: 'master'

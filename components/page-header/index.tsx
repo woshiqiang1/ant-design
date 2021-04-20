@@ -41,9 +41,7 @@ const renderBack = (
         <div className={`${prefixCls}-back`}>
           <TransButton
             onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-              if (onBack) {
-                onBack(e);
-              }
+              onBack?.(e);
             }}
             className={`${prefixCls}-back-button`}
             aria-label={back}
@@ -163,8 +161,8 @@ const PageHeader: React.FC<PageHeaderProps> = props => {
           breadcrumbRender?.(props, defaultBreadcrumbDom) || defaultBreadcrumbDom;
 
         const className = classNames(prefixCls, customizeClassName, {
-          'has-breadcrumb': breadcrumbDom,
-          'has-footer': footer,
+          'has-breadcrumb': !!breadcrumbDom,
+          'has-footer': !!footer,
           [`${prefixCls}-ghost`]: ghost,
           [`${prefixCls}-rtl`]: direction === 'rtl',
           [`${prefixCls}-compact`]: compact,
